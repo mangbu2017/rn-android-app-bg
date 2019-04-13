@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 
 const ShelfBook = mongoose.Schema({
-    bookId: String,
+    bookId: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'aBook',
+    },
     activeIndex: Number,
     activeScroll: Number,
 });

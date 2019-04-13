@@ -6,12 +6,14 @@ const Book = mongoose.Schema({
     bookSpiderUrl: String,
     author: String,
     authorSpiderUrl: String,
+    cover: String,
     // 简介
     intro: String,
     // 分类
     category: String,
     // 是否完本
     isFinished: Boolean,
+    writeState: String,
     // 最新章节
     lastChapter:  String,
     // 总字数

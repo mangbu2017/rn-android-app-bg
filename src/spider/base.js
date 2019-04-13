@@ -37,7 +37,7 @@ class SpiderBase {
                       type = $('.index_block p a').eq(0).text();
                       console.log('list&type: ', list, type);
 
-                book.category || (book.category = type) ;
+                book.category || (book.category = type);
 
                 console.log('book: ', book);
 

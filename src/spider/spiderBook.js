@@ -15,7 +15,13 @@ class SpiderBook {
     async init() {
         try {
             this.book = await Book.findById(this.id);
-            console.log(`开始爬取《${this.book.bookname}》章节列表`);
+
+            if(this.book.intro) {
+                console.log('详细信息已录入，无需再次爬取');
+                return this;
+            }
+
+            await this.spiderBookInfo();
 
             return this;
         }catch(err) {
@@ -23,10 +29,45 @@ class SpiderBook {
         }
     }
     /**
+     * 爬取书籍详细信息
+     */
+    async spiderBookInfo() {
+        try {
+
+            const bookSpiderUrl = this.book.bookSpiderUrl;
+            const arr = bookSpiderUrl.split('/');
+            const url = 'https://m.x23us.com/book/' + arr[3];
+
+            const html = await getHtml(url);
+
+            const $ = cheerio.load(html),
+                  cover =  $('.block_img2 img').attr('src'),
+                  p = $('.block_txt2 p'),
+                  writeState = p.eq(4).text().substr(3),
+                  lastUpdateTime = p.eq(5).text().substr(3),
+                  lastChapter = p.eq(6).find('a').text(),
+                  intro = $('.intro_info').text();
+
+            this.book.cover = cover;
+            this.book.writeState = writeState;
+            this.book.lastUpdateTime = lastUpdateTime;
+            this.book.lastChapter = lastChapter;
+            this.book.intro = intro;
+
+            await this.book.save();
+
+            console.log(this.book.bookname, '书籍信息录入成功');
+                  
+        }catch(err) {
+            console.log('SpiderBook.spiderBookInfo.error: ', err);
+        }
+    }
+    /**
      * 爬取章节列表至最新章节
      */
     async spiderAndInsertChapter() {
         try {
+            console.log(`开始爬取《${this.book.bookname}》章节列表`);
             const html = await getHtml(this.baseUrl + this.book.bookSpiderUrl);
             const $ = cheerio.load(html),
                     // 获取到的是所有的
@@ -108,8 +149,7 @@ class SpiderBook {
 // 这种写法还是有些蛋疼
 // (async function() {
 //     const spider = await new SpiderBook('5ca4993bd735561b75616375').init();
-//     const res = await spider.spiderAndInsertChapterContent(12);
-//     console.log(res);
+//     const res = await spider.spiderBookInfo();
 // }());
 
 module.exports = SpiderBook;

@@ -12,3 +12,8 @@ express()返回的app实际上只是一个js函数，它被设计成座位回调
 ### mongoose的更新方法
 1. model.findById();
 2. model.findByIdAndUpdate();
+3. model.find() 第一个参数表示 筛选条件 第二个 可以限制返回的键
+
+
+## es7
+1. 在router.method中使用 async/await 时只使用最外层的一个try/catch无法具体定位到错误来自于顺序控制中的哪个await

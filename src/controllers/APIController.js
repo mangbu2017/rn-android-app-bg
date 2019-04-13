@@ -4,6 +4,7 @@ const User = require('../model/User');
 const Cate = require('../model/Cate');
 const Book = require('../model/Book').book;
 const SpiderBook = require('../spider/spiderBook');
+const BookShelf = require('../process/BookShelf');
 
 // 登录
 router.post('/login', async function(req, res) {
@@ -80,9 +81,13 @@ router.post('/register', async function(req, res) {
 // 获取 书库-分类 信息
 router.get('/category', async function(req, res) {
     try {
-        const doc = await Cate.find({});
+        const { cate } = req.query;
+        const doc = await Book.find({category: cate}, {
+            chapters: 0,
+        });
 
         console.log(doc);
+
         res.send({
             code: 0,
             data: doc,
@@ -91,18 +96,6 @@ router.get('/category', async function(req, res) {
 
     }catch(err) {
         console.log(err);
-    }
-});
-
-router.get('/iwant/:bn', async function(req, res) {
-    try {
-        const bookname = req.params.bn;
-
-        const doc = await Book.find({bookname});
-
-        res.send(doc);
-    }catch(err) {
-        console.log('/iwant/:bn.error: ', err);
     }
 });
 
@@ -145,6 +138,63 @@ router.get('/book/:bookid/:index', async function(req, res) {
         }
     }catch(err) {
         console.log('/book/:bookid/:index.error: ', err);
+    }
+});
+
+// 根据关键字查找书籍
+router.get('/search', async function(req, res) {
+    try {
+        const { keyword } = req.query;
+    
+        const reg = new RegExp(`${keyword}`);
+                                                    // 排除chapters字段
+        const docs = await Book.find({bookname: reg}, { chapters: 0 });
+    }catch(err) {
+        console.log('/search.error: ', err);
+    }
+
+    res.send(docs);
+});
+
+// 添加书籍到我的书架
+router.post('/bookshelf/add', async function(req, res) {
+    try {
+        const { username, bookid } = req.query;
+        
+        const bookshelf = await new BookShelf(username).init();
+
+        await bookshelf.addBook(bookid);
+
+        res.send({
+            code: 0,
+            des: '书架收录成功',
+        });
+
+    }catch(err) {
+        console.log('/bookshelf/add.error: ', err);
+    }
+});
+
+
+
+// 从我的书架删除书籍
+
+router.post('/bookshelf/remove', async function(req, res) {
+    const { username, bookid } = req.query;
+
+
+});
+
+// 根据书名获取书籍信息
+router.get('/iwant/:bn', async function(req, res) {
+    try {
+        const bookname = req.params.bn;
+
+        const doc = await Book.find({bookname});
+
+        res.send(doc);
+    }catch(err) {
+        console.log('/iwant/:bn.error: ', err);
     }
 });
 
