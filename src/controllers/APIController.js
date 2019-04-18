@@ -5,6 +5,8 @@ const Cate = require('../model/Cate');
 const Book = require('../model/Book').book;
 const SpiderBook = require('../spider/spiderBook');
 const BookShelf = require('../process/BookShelf');
+const Rank = require('../process/Rank');
+const RankModel = require('../model/Rank');
 
 // 登录
 router.post('/login', async function(req, res) {
@@ -81,21 +83,54 @@ router.post('/register', async function(req, res) {
 // 获取 书库-分类 信息
 router.get('/category', async function(req, res) {
     try {
-        const { cate } = req.query;
-        const doc = await Book.find({category: cate}, {
+        const { type } = req.query;
+
+        const docs = await Book.find({category: type}, {
+            // 先不要章节信息
             chapters: 0,
         });
 
-        console.log(doc);
-
         res.send({
             code: 0,
-            data: doc,
+            data: docs,
             des: '成功获取分类信息', 
         });
 
     }catch(err) {
         console.log(err);
+    }
+});
+
+// 获取图书的章节列表
+
+router.get('/chapterlist', async function(req, res) {
+    try {
+        const { id } = req.query;
+        
+        const spider = new SpiderBook(id);
+
+        await spider.init();
+
+        if(spider.book.chapters && spider.book.chapters.length !== 0) {
+            console.log('if');
+            res.send({
+                code: 0,
+                des: '存在章节列表，未爬取',
+                data: spider.book.chapters,
+            });
+        }else {
+            console.log('else');
+            spider.spiderAndInsertChapter().then(docs => {
+                res.send({
+                    code: 0,
+                    des: '章节列表不存在，已爬取并入库',
+                    data: docs,
+                });
+            });
+        }
+
+    }catch(err) {
+        console.log('/chapterlist.error: ', err);
     }
 });
 
@@ -118,7 +153,8 @@ router.get('/book/:bookid/:index', async function(req, res) {
         }else {
             const spider = await new SpiderBook(bookid).init();
             // 爬取章节信息更新至数据库
-            const updateChapters = await spider.spiderAndInsertChapter();
+            // 不用每次获取章节内容之前都 重新拉取章节列表
+            // const updateChapters = await spider.spiderAndInsertChapter();
             
             const content = await spider.spiderAndInsertChapterContent(index);
 
@@ -132,7 +168,7 @@ router.get('/book/:bookid/:index', async function(req, res) {
                     code: 0,
                     data: content,
                     des: '爬取更新章节列表，章节内容至数据库',
-                    updateChapters,
+                    // updateChapters,
                 });
             }
         }
@@ -185,6 +221,22 @@ router.post('/bookshelf/remove', async function(req, res) {
 
 });
 
+// 获取热门排行
+router.get('/bookrank', async function(req, res) {
+    try {
+        const { type } = req.query;
+        console.log(type);
+
+        const rank = new Rank();
+        const doc = await rank.getRankingList(type);
+
+        res.send(doc.rankingList);
+    }catch(err) {
+        console.log('/bookrank.error: ', err);
+    }
+});
+
+
 // 根据书名获取书籍信息
 router.get('/iwant/:bn', async function(req, res) {
     try {
@@ -196,6 +248,26 @@ router.get('/iwant/:bn', async function(req, res) {
     }catch(err) {
         console.log('/iwant/:bn.error: ', err);
     }
+});
+
+router.get('/populate', async function(req, res) {
+    const doc = await RankModel.findOne({
+        type: 'all',
+    }).populate('rankingList');
+
+    // console.log(doc.rankingList[0].populate())
+    // console.log(doc.populate("bookId.0"));
+
+    console.log(doc);
+
+    res.send(doc);
+
+    // 错就错在把连着的分两步写了
+    // .populate({
+    //     path:     'comments',			
+    //     populate: { path:  'user',
+    //             model: 'users' }
+    //   })
 });
 
 module.exports = router;

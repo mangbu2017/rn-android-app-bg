@@ -21,7 +21,8 @@ class SpiderBook {
                 return this;
             }
 
-            await this.spiderBookInfo();
+            // 初始化并不自动爬取 书籍详情
+            // await this.spiderBookInfo();
 
             return this;
         }catch(err) {
@@ -46,13 +47,17 @@ class SpiderBook {
                   writeState = p.eq(4).text().substr(3),
                   lastUpdateTime = p.eq(5).text().substr(3),
                   lastChapter = p.eq(6).find('a').text(),
-                  intro = $('.intro_info').text();
+                  intro = $('.intro_info').text(),
+                  author = p.eq(2).find('a').text(),
+                  category = p.eq(3).find('a').text();
 
             this.book.cover = cover;
             this.book.writeState = writeState;
             this.book.lastUpdateTime = lastUpdateTime;
             this.book.lastChapter = lastChapter;
             this.book.intro = intro;
+            this.book.author = author;
+            this.book.category = category;
 
             await this.book.save();
 
