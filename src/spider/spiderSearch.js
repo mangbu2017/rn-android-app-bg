@@ -15,25 +15,34 @@ class SpiderSearch {
     constructor(keyowrd) {
         this.keyword = keyowrd;
         this.data = [];
-        this.init();
     }
 
     async init() {
         try {
+            // 初始化url&关键字
             this._initUrl();
 
+            // 获取匹配的书籍列表html
             await this.spiderSearchList();
 
-            console.log(this.data);
+            // 处理列表 得到data
             this.processSearchList();
 
+            // 获取章节列表并插库
             const proArr = this.data.map(item => {
                 return this.insertOneBook(item);
             });
 
             const resArr = await Promise.all(proArr);
 
-            console.log(resArr);
+            if(resArr.length == 0 && !resArr[0]) {
+                console.log('爬取排行item，已经有数据了');
+            }else {
+                console.log('爬取排行item，已经进行爬取');
+            }
+
+            return resArr[0];
+            // return this;
         }catch(err) {
             console.log('SpiderSearch.init.error: ', err);
         }
@@ -52,10 +61,8 @@ class SpiderSearch {
         const $ = cheerio.load(this.searcHtml),
               list = $('.cover > p');
 
-        console.log('干你嘛呢');
-        console.log(this.data);
         if(list && list.length === 0) {
-            console.log('精确搜索', list);
+            console.log('精确匹配单个doc');
             const a = $('.block_txt2 a'),
                   bookname = a.eq(1).text(),
                   author = a.eq(2).text(),
@@ -69,7 +76,7 @@ class SpiderSearch {
             });
 
         }else {
-            console.log('模糊搜索', list);
+            console.log('模糊匹配多个doc', list);
             for(let i = 0; i < list.length; i ++) {
 
                 const a = list.eq(i).find('a'),
@@ -91,17 +98,15 @@ class SpiderSearch {
                 this.data.push(data);
             }
         }
-        console.log('this.data: ', this.data);
     }
 
     async spiderAndProcessChapter(book) {
-        console.log('spiderAndProcessChpater');
+       
         try {
             const html = await getHtml(this.baseUrl + book.bookSpiderUrl);
                 const $ = cheerio.load(html),
                       list = $('.chapter a'),
                       type = $('.index_block p a').eq(0).text();
-                      console.log('list&type: ', list, type);
 
                 book.category = type;
 
@@ -139,6 +144,7 @@ class SpiderSearch {
                 // async 最后返回的promise是需要return 传入 决议值的
                 return doc_1;
             }
+            console.log('数据重复，不尽兴重复插入');
         }catch(err) {
             console.log('SpiderSearch.insertOneBook.error: ', err);
         }
@@ -151,7 +157,7 @@ class SpiderSearch {
     }
 }
 
-new SpiderSearch('大明文魁');
+// new SpiderSearch('大明文魁').init();
 
 
 module.exports = SpiderSearch;

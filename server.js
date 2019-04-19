@@ -3,7 +3,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const http = require('http');
-const https = require('https');
 const path = require('path');
 const fs = require('fs');
 
@@ -17,10 +16,6 @@ const port = 9999;
 const sslPort = 9102;
 
 const app = express();
-
-const privateKey  = fs.readFileSync('./https/private.pem', 'utf8');
-const certificate = fs.readFileSync('./https/file.crt', 'utf8');
-const credentials = {key: privateKey, cert: certificate};
 
 app.use(express.static(path.join(__dirname, 'static'), {
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -73,7 +68,5 @@ app.use(function (err, req, res, next) {
 });
 
 http.createServer(app).listen(port);
-https.createServer(credentials, app).listen(sslPort);
 
 console.log(`listening on http port:${port}`);
-console.log(`listening on https port:${sslPort}`);
