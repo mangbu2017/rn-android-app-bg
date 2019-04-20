@@ -47,11 +47,14 @@ router.post('/delBook', async function(req, res) {
     }
 });
 
+
+// 单纯的从数据库中获取 章节列表
 router.get('/chapters', async function(req, res) {
     const { bookid } = req.query;
 
     const chapter = new Chapter(bookid);
 
+    // 不对 没有await
     const doc = chapter.init();
 
     const data = chapter.getChapters();
@@ -63,21 +66,24 @@ router.get('/chapters', async function(req, res) {
     });
 });
 
+// 更新章节列表
 router.get('/updateChapters', async function(req, res) {
+    // get请求 正常到query中取数据
     const { bookid } = req.query;
+
+    console.log(bookid);
     
     const chapter = new Chapter(bookid);
 
-    const doc = chapter.init();
+    await chapter.init();
 
-    await chapter.spiderAndInsertChapter();
+    const doc = await chapter.spiderAndInsertChapter();
 
+    // 理应返回新的章节列表
     res.send({
         code: 0,
         des: '章节更新成功',
-        data: {
-
-        }
+        data: doc.chapters,
     });
 });
 

@@ -156,9 +156,9 @@ router.get('/book/:bookid/:index', async function(req, res) {
             // 不用每次获取章节内容之前都 重新拉取章节列表
             // const updateChapters = await spider.spiderAndInsertChapter();
             
-            const content = await spider.spiderAndInsertChapterContent(index);
+            const doc = await spider.spiderAndInsertChapterContent(index);
 
-            if(typeof content === 'number') {
+            if(typeof doc === 'number') {
                 res.send({
                     code: '20001',
                     des: '参数错误',
@@ -166,7 +166,8 @@ router.get('/book/:bookid/:index', async function(req, res) {
             }else {
                 res.send({
                     code: 0,
-                    data: content,
+                    // 之返回新增的章节信息
+                    data: doc.chapters[index].content,
                     des: '爬取更新章节列表，章节内容至数据库',
                     // updateChapters,
                 });
