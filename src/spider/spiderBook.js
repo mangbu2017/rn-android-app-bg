@@ -75,6 +75,7 @@ class SpiderBook {
             console.log(`开始爬取《${this.book.bookname}》章节列表`);
             const html = await getHtml(this.baseUrl + this.book.bookSpiderUrl);
             const $ = cheerio.load(html),
+            
                     // 获取到的是所有的
                     list = $('.chapter a'),
                     type = $('.index_block p a').eq(0).text(),
@@ -101,11 +102,14 @@ class SpiderBook {
                 res.push(data);
             }
 
-            await this.book.save();
+            const docs = await this.book.save();
             console.log(`完成，爬取之前${len}章，爬取之后${lastLength}章`);
 
             // 这里可能出现错误
-            return res;
+            // return res;
+            // 需要的返回值 绑定到this
+
+            return docs;
         }catch(err) {
             console.log('SpiderSearch.spiderAndProcessChapter.error: ', err);
         }
@@ -140,11 +144,11 @@ class SpiderBook {
             
             chapter.content = content;
 
-            await this.book.save();
+            const doc = await this.book.save();
 
-            console.log(`获取第${index}章内容成功`);
+            console.log(`获取第${index}章<${chapter.chaptername}>内容成功`);
 
-            return content;
+            return doc;
         }catch(err) {
             console.log('SipderBook.spiderAndInsertChapterContent.error: ', err);
         }
