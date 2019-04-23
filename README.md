@@ -18,8 +18,10 @@ express()返回的app实际上只是一个js函数，它被设计成座位回调
 
 ### mongoose populate 操作支持subdocument 支持嵌套 前提是你不能把 find populate分开写
 
+### Error: Invalid value for schema Array path `comments`
+- 可能的原因是 变量名写错了
 
 ## es7
 1. 在router.method中使用 async/await 时只使用最外层的一个try/catch无法具体定位到错误来自于顺序控制中的哪个await
 
-##
+## 

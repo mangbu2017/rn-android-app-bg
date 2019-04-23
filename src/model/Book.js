@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Chapter = require('./Chapter');
 // Schema
-const Comment = require('./comment').comments;
+const Comment = require('./comment').Comments;
 
 const Book = mongoose.Schema({
     bookname: String,
