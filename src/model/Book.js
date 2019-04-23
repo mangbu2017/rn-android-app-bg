@@ -16,14 +16,8 @@ const Book = mongoose.Schema({
     writeState: String,
     // 最新章节
     lastChapter:  String,
-    // 总字数
-    wordCount: Number,
     // 最近更新时间
     lastUpdateTime: Date,
-    // 内容标签
-    tags: [String],
-    // 章节数
-    chaptersCount: Number,
     chapters: [Chapter],
     // 我的书架
     // 我的缓存
