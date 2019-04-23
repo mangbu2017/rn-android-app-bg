@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Chapter = require('./Chapter');
+// Schema
+const Comment = require('./comment').comments;
 
 const Book = mongoose.Schema({
     bookname: String,
@@ -19,6 +21,7 @@ const Book = mongoose.Schema({
     // 最近更新时间
     lastUpdateTime: Date,
     chapters: [Chapter],
+    comments: [Comment],
     // 我的书架
     // 我的缓存
     // 个人设置
